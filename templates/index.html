@@ -5,30 +5,37 @@
     <title>Upload Image</title>
     {% load static %}
     <script src="{% static 'jquery.js' %}"></script><!-- 加载本地jquery依赖-->
-      <link rel="stylesheet" href="{% static 'index.css' %}">
+ <link rel="stylesheet" href="{% static 'index.css' %}">
 
 </head>
 <body>
-   <div class="container">
-          <h1>基于深度学习的智能脑癌区域定位系统</h1>
-        <div class="form-container">
-            <h2>模型上传</h2>
-            <form id="upload-form" enctype="multipart/form-data">
-                <input type="file" name="image" required>
+  <div class="navbar">
+        智能脑肿瘤检测系统
+    </div>
+<div class="container">
+    <div class="form-container">
+        <h2>选择模型和图片</h2>
+        <form id="upload-form" enctype="multipart/form-data">
+            <div class="input-group">
+                <input type="file" name="image" id="image" required style="display:none;"> <!-- 隐藏原始输入框 -->
+                <label for="image" class="file-upload-label">选择文件</label> <!-- 使用 label 显示自定义文本 -->
 
                 <label for="model_name">选择模型:</label>
                 <select name="model_name" id="model_name" required>
                     <option value="" disabled selected>选择一个模型</option>
                 </select>
 
-                <button type="submit">上传</button>
-            </form>
-        </div>
-
-        <div class="image-container" id="image-container">
-            <!-- 将会放置返回的图像 -->
-        </div>
+                <button type="submit">进行推测</button>
+            </div>
+        </form>
+        <h2 id="res"></h2>
     </div>
+        <div class="image-container" id="image-container">
+        <!-- 将会放置返回的图像 -->
+        <img id="res-image" alt="推测的图像" style="display:none;"/>
+        <p>绿色区域代表可能的癌症的位置，结果仅供参考！</p>
+    </div>
+</div>
 
 
     <script>
@@ -52,9 +59,11 @@
     </script>
 
 <script>
-    $(document).ready(function() {
-        $('#upload-form').on('submit', function(event) {
+    $('#upload-form').on('submit', function(event) {
             event.preventDefault(); // 阻止默认表单提交
+
+            // 显示“请稍等”
+            $('#res').text('请稍等...');
 
             const formData = new FormData(this); // 使用 FormData 对象获取表单数据
 
@@ -66,15 +75,17 @@
                 contentType: false, // 不设置内容类型
                 success: function(response) {
                     // 设置 img 的 src 为返回的 Base64 数据
-                    $('#image-container').attr('src', response.image);
-                    $('#image-container').show(); // 显示图像
+                    $('#res-image').attr('src', response.image);
+                    $('#res-image').show(); // 显示图像
+                    $('#res').text('推测完毕'); // 更改文本为“推测完毕”
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     console.error('Error uploading image:', textStatus, errorThrown);
+                    $('#res').text('上传失败，请重试。'); // 显示错误信息
                 }
             });
         });
-    });
+
 </script>
 
 </body>

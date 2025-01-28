@@ -93,8 +93,8 @@ def predict_image(request):
     return JsonResponse({'error': 'Invalid request'}, status=400)
 from django.views.decorators.http import require_GET
 
-# 假设 MODEL_DIR 是你的模型文件存放目录
-MODEL_DIR = 'path/to/your/model/directory'
+# 假设 MODEL_DIR 是模型文件存放目录
+MODEL_DIR = 'E:/1555bishe/project/model'
 
 @require_GET
 def get_model_names(request):
