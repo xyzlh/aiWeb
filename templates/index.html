@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Upload Image</title>
+    {% load static %}
+    <script src="{% static 'jquery.js' %}"></script><!-- 加载本地jquery依赖-->
+      <link rel="stylesheet" href="{% static 'index.css' %}">
+
+</head>
+<body>
+   <div class="container">
+          <h1>基于深度学习的智能脑癌区域定位系统</h1>
+        <div class="form-container">
+            <h2>模型上传</h2>
+            <form id="upload-form" enctype="multipart/form-data">
+                <input type="file" name="image" required>
+
+                <label for="model_name">选择模型:</label>
+                <select name="model_name" id="model_name" required>
+                    <option value="" disabled selected>选择一个模型</option>
+                </select>
+
+                <button type="submit">上传</button>
+            </form>
+        </div>
+
+        <div class="image-container" id="image-container">
+            <!-- 将会放置返回的图像 -->
+        </div>
+    </div>
+
+
+    <script>
+        // Fetch model names from the backend when the document is ready
+        $(document).ready(function() {
+            $.ajax({
+                url: 'http://127.0.0.1:8000/modelName/',  // Adjust this URL according to your Django routing
+                method: 'GET',
+                success: function (data) {
+                    const modelSelect = $('#model_name');
+                    data.model_names.forEach(function (model) {
+                        modelSelect.append(new Option(model, model));
+                    });
+                },
+                error: function () {
+                    alert('Failed to load models.');
+                }
+            });
+      });
+
+    </script>
+
+<script>
+    $(document).ready(function() {
+        $('#upload-form').on('submit', function(event) {
+            event.preventDefault(); // 阻止默认表单提交
+
+            const formData = new FormData(this); // 使用 FormData 对象获取表单数据
+
+            $.ajax({
+                url: 'http://127.0.0.1:8000/predict/', // Django 后端的 URL
+                type: 'POST',
+                data: formData,
+                processData: false, // 不处理数据
+                contentType: false, // 不设置内容类型
+                success: function(response) {
+                    // 设置 img 的 src 为返回的 Base64 数据
+                    $('#image-container').attr('src', response.image);
+                    $('#image-container').show(); // 显示图像
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.error('Error uploading image:', textStatus, errorThrown);
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>

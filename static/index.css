@@ -1,0 +1,84 @@
+body {
+    background-color: #0e0e0e; /* 深色背景 */
+    color: #ffffff; /* 字体颜色为白色 */
+    font-family: 'Arial', sans-serif; /* 字体 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* 视口高度 */
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 80%; /* 容器宽度 */
+    max-width: 600px; /* 最大宽度 */
+}
+
+.form-container {
+    background-color: #1b1b1b; /* 表单背景 */
+    padding: 20px;
+    border-radius: 10px; /* 圆角效果 */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); /* 阴影效果 */
+    margin-bottom: 20px; /* 表单与图像容器之间的间距 */
+    width: 100%;
+}
+
+h2 {
+    text-align: center; /* 标题居中 */
+}
+
+input[type="file"], select {
+    width: 100%; /* 填满宽度 */
+    padding: 10px;
+    margin: 10px 0; /* 上下间距 */
+    border-radius: 5px; /* 圆角 */
+    border: 1px solid #555; /* 边框样式 */
+    background-color: #2b2b2b; /* 背景色 */
+    color: #fff; /* 字体颜色 */
+}
+
+button {
+    background-color: #007bff; /* 按钮背景颜色 */
+    color: white; /* 字体颜色 */
+    border: none; /* 去掉边框 */
+    padding: 10px 20px; /* 内边距 */
+    border-radius: 5px; /* 圆角 */
+    cursor: pointer; /* 鼠标样式 */
+    transition: background-color 0.3s, transform 0.2s; /* 动画效果 */
+    width: 100%; /* 填满宽度 */
+}
+
+button:hover {
+    background-color: #0056b3; /* 悬浮时背景颜色 */
+    transform: scale(1.05); /* 悬浮时放大 */
+}
+
+.image-container {
+    background-color: #1b1b1b; /* 图像容器背景 */
+    padding: 20px;
+    border-radius: 10px;
+     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); /* 阴影效果 */
+    width: 100%; /* 容器宽度 */
+    display: flex; /* 使用 flexbox 布局 */
+    justify-content: center; /* 内容居中 */
+    align-items: center; /* 垂直居中 */
+    min-height: 200px; /* 最小高度 */
+}
+
+.image-container img {
+    max-width: 100%; /* 图像最大宽度 */
+    height: auto; /* 自适应高度 */
+    border-radius: 10px; /* 圆角 */
+}
+
+@media only screen and (max-width: 600px) {
+    .container {
+        width: 95%; /* 在小屏幕上减小宽度 */
+    }
+
+    button {
+        padding: 8px 16px; /* 减少按钮内边距 */
+    }
+}
