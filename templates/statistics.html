@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>管理员统计页面</title>
+    <!-- ECharts -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: #f5f5f5;
+        }
+
+        .navbar {
+            background: #1f80e0;
+            color: white;
+            padding: 15px;
+            font-size: 18px;
+        }
+
+        .container {
+            padding: 20px;
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        .panel, .chart-panel, .table-panel {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            padding: 20px;
+        }
+
+        .panel-header {
+            font-size: 16px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .filter-group label {
+            font-size: 14px;
+        }
+
+        .filter-group input, .filter-group select {
+            padding: 6px 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        #stats-chart {
+            width: 100%;
+            height: 400px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid #e0e0e0;
+            padding: 8px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        th {
+            background: #f0f0f0;
+        }
+
+        .search-group {
+            margin-bottom: 10px;
+        }
+
+        .search-group input {
+            width: 200px;
+        }
+    </style>
+</head>
+<body>
+<div class="navbar">智能脑肿瘤分析系统 - 数据分析员查看统计数据</div>
+
+<!-- 筛选面板 -->
+<div class="panel">
+    <div class="panel-header">柱状图筛选</div>
+    <div class="filter-group">
+        <label>开始日期：<input type="date" id="start-date" onchange="loadStats()"></label>
+        <label>结束日期：<input type="date" id="end-date" onchange="loadStats()"></label>
+    </div>
+    <!-- 柱状图面板 -->
+    <div class="chart-panel">
+        <div class="panel-header">患有脑肿瘤人数（按月份统计）</div>
+        <div id="bar-chart" style="width: 100%; height: 400px;"></div>
+    </div>
+</div>
+
+
+<!-- 筛选面板 -->
+<div class="panel">
+    <div class="panel-header">饼状图筛选</div>
+
+    <div class="filter-group">
+        <!-- 新增年龄筛选 -->
+        <label>年龄范围：
+            <input type="number" id="age-min" placeholder="最小" style="width:60px;" onkeyup="loadStats()">
+            -
+            <input type="number" id="age-max" placeholder="最大" style="width:60px;" onkeyup="loadStats()">
+        </label>
+        <!-- 新增性别筛选 -->
+        <label>性别：
+            <select id="gender" onchange="loadStats()">
+                <option value="">不限</option>
+                <option value="M">男</option>
+                <option value="F">女</option>
+            </select>
+        </label>
+    </div>
+    <div class="chart-panel">
+        <div class="panel-header">肿瘤类型分布（首次分析记录）</div>
+        <div id="stats-chart"></div>
+    </div>
+</div>
+<!-- 饼图面板 -->
+
+
+<script>
+    var pieChart = echarts.init(document.getElementById('stats-chart'));
+    var barChart = echarts.init(document.getElementById('bar-chart'));
+
+    function loadStats() {
+        var start = document.getElementById('start-date').value;
+        var end = document.getElementById('end-date').value;
+        var ageMin = document.getElementById('age-min').value;
+        var ageMax = document.getElementById('age-max').value;
+        var gender = document.getElementById('gender').value;
+
+        // 拼接查询字符串
+        var qs = `?start=${start}&end=${end}`
+            + `&age_min=${ageMin}&age_max=${ageMax}`
+            + `&gender=${gender}`;
+
+        // 饼图：肿瘤类型分布
+        fetch(`/stats_api${qs}`)
+            .then(res => res.json())
+            .then(data => {
+                var pieOption = {
+                    tooltip: {trigger: 'item'},
+                    legend: {top: '5%', left: 'center'},
+                    series: [{
+                        name: '肿瘤比例',
+                        type: 'pie',
+                        radius: ['40%', '70%'],
+                        avoidLabelOverlap: false,
+                        label: {show: true, position: 'outside', formatter: '{b}: {d}% ({c})'},
+                        data: data.map(item => ({name: item.tumor_name, value: item.count}))
+                    }]
+                };
+                pieChart.setOption(pieOption);
+            });
+
+        // 柱状图：按月统计的人数
+fetch(`/monthly_stats_api?start=${start}&end=${end}`)
+    .then(res => res.json())
+    .then(data => {
+        var tumorTypes = ['脑膜瘤', '胶质瘤', '血管瘤', '无肿瘤'];
+
+        // 定义每个肿瘤类型的颜色
+        var colorMap = {
+            '脑膜瘤': '#db2ee8',    // 紫色
+            '胶质瘤': '#e10d0d',    // 红色
+            '血管瘤': '#e1b40e',    // 黄色
+            '无肿瘤': '#21aa00'     // 绿色
+        };
+
+        // 计算每个月的不同肿瘤类型数据
+        var series = tumorTypes.map((tumor, index) => {
+            return {
+                name: tumor,
+                type: 'bar',
+                data: data.map(item => item[tumor] || 0),
+                barWidth: '18%', // 设置每个柱子的宽度，减小宽度可以为每个月添加更多空间
+                itemStyle: {color: colorMap[tumor]},  // 为每个系列指定颜色
+                barGap: '10%', // 设置不同肿瘤类型之间的间隙
+                xAxisIndex: 0 // 使用相同的 x 轴
+            };
+        });
+
+        // 配置图表的选项
+        var barOption = {
+            tooltip: {
+                trigger: 'axis'
+            },
+            legend: {
+                data: tumorTypes
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '10%', // 增加底部空隙
+                containLabel: true
+            },
+            xAxis: {
+                type: 'category',
+                data: data.map(item => item.month),  // 月份
+                boundaryGap: true, // 保证柱子居中并有空隙
+                axisLabel: {
+                    interval: 0, // 保证所有月份都显示
+                    rotate: 45,  // 如果月份名称重叠，可以旋转显示
+                }
+            },
+            yAxis: {
+                type: 'value',
+                name: '人数'
+            },
+            series: series,
+            barCategoryGap: '40%' // 增加月份之间的间隙（调整柱子间隔）
+        };
+
+        barChart.setOption(barOption);
+    });
+
+
+
+    }
+
+    // 初始默认时间
+    window.onload = function () {
+        const today = new Date();
+        document.getElementById('start-date').value =  "2024-01-01";
+
+
+// 获取当前年份
+const year = today.getFullYear();
+
+// 获取当前月份（注意：月份是从0开始的，所以要加1）
+const month = today.getMonth() + 1;
+
+// 获取当前日期
+const day = today.getDate();
+
+// 格式化日期为 yyyy-mm-dd 格式
+const formattedDate = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+
+// 设置输入框的值为今天的日期
+document.getElementById('end-date').value = formattedDate;
+        loadStats();
+    };
+</script>
+</body>
+</html>

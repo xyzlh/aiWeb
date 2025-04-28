@@ -1,92 +1,334 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Upload Image</title>
     {% load static %}
     <script src="{% static 'jquery.js' %}"></script><!-- 加载本地jquery依赖-->
- <link rel="stylesheet" href="{% static 'index.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it@13.0.1/dist/markdown-it.min.js"></script>
+    <link rel="stylesheet" href="{% static 'index.css' %}">
 
 </head>
+
 <body>
-  <div class="navbar">
-        智能脑肿瘤检测系统
-    </div>
-<div class="container">
-    <div class="form-container">
-        <h2>选择模型和图片</h2>
-        <form id="upload-form" enctype="multipart/form-data">
-            <div class="input-group">
-                <input type="file" name="image" id="image" required style="display:none;"> <!-- 隐藏原始输入框 -->
-                <label for="image" class="file-upload-label">选择文件</label> <!-- 使用 label 显示自定义文本 -->
 
-                <label for="model_name">选择模型:</label>
-                <select name="model_name" id="model_name" required>
-                    <option value="" disabled selected>选择一个模型</option>
-                </select>
+<div class="navbar"><!-- 上方导航栏-->
+  智能脑肿瘤分析系统 <span id="navbar-username"></span>
+</div>
+    <div class="container">
+        <div class="form-container"><!-- 左侧输入模块-->
+            <h2>选择图片即可自动分析</h2>
+            <form id="upload-form" enctype="multipart/form-data">
+                <div class="input-group">
+                    <input type="file" name="image" id="image" required style="display:none;"> <!-- 隐藏原始输入框 -->
+                    <label for="image" class="file-upload-label">选择图片</label> <!-- 使用 label 显示自定义文本 -->
+                </div>
+            </form>
 
-                <button type="submit">进行推测</button>
-            </div>
-        </form>
-        <h2 id="res"></h2>
-    </div>
+        </div>
         <div class="image-container" id="image-container">
-        <!-- 将会放置返回的图像 -->
-        <img id="res-image" alt="推测的图像" style="display:none;"/>
-        <p>绿色区域代表可能的癌症的位置，结果仅供参考！</p>
+            <!-- 肿瘤类型div -->
+            <div id="tumor-type">
+                <h2 id="res"></h2>
+                <p style="color: #fa6718">绿色区域代表可能的肿瘤的位置，结果仅供参考！</p>
+
+            </div>
+              <div>
+      <p>上传的图像</p>
+    <img id="preview-img"  alt="预览图" style="display:none;"/>
+      </div>
+            <!-- 将会放置返回的图像 -->
+            <div>
+                <p>U-Net模型的推断结果</p>
+                <img id="unet-image" alt="推测的图像" style="display:none;" />
+            </div>
+            <div>
+                <p>DeepLabV3+模型的推断结果</p>
+                <img id="deeplab-image" alt="推测的图像" style="display:none;" />
+            </div>
+            <div>
+                <p>LinkNet模型的推断结果</p>
+                <img id="linknet-image" alt="推测的图像" style="display:none;" />
+            </div>
+        </div>
+
     </div>
+
+
+<!-- 历史记录弹窗容器 -->
+<div id="history-popup" >
+  <h3>历史记录</h3>
+  <div id="history-content"></div>
+  <button onclick="document.getElementById('history-popup').style.display='none'">关闭</button>
 </div>
 
 
+    <div class="text-container">
+        <h2>AI智能分析</h2>
+     <div class="custom-select">
+         <label for="model-type" style="font-size: 16px; font-weight: bold;">选择大语言模型:</label>
+  <select id="model-type">
+    <option value="deepseek-r1">deepseek-r1(回复很慢）</option>
+    <option value="gpt-3.5-turbo" selected>gpt-3.5-turbo(回复较快)</option>
+         <option value="deepseek-v3" >deepseek-v3(回复比较慢）</option>
+  </select>
+
+   <button id="export-btn" disabled  >
+         导出报告
+         </button>
+    <button id="history-btn" style="left: 300px; width:200px;">历史分析记录</button>
+</div>
+<p id="ai-wait" class="loading-text" style="display:none;">请稍等<span class="dots"></span></p>
+
+        <span id="ai-answer"></span>
+    </div>
+
+
     <script>
-        // Fetch model names from the backend when the document is ready
-        $(document).ready(function() {
-            $.ajax({
-                url: 'http://127.0.0.1:8000/modelName/',  // Adjust this URL according to your Django routing
-                method: 'GET',
-                success: function (data) {
-                    const modelSelect = $('#model_name');
-                    data.model_names.forEach(function (model) {
-                        modelSelect.append(new Option(model, model));
-                    });
-                },
-                error: function () {
-                    alert('Failed to load models.');
-                }
-            });
-      });
 
-    </script>
-
-<script>
-    $('#upload-form').on('submit', function(event) {
-            event.preventDefault(); // 阻止默认表单提交
-
-            // 显示“请稍等”
+//推断肿瘤类型
+        async function sub(event) {
+        event.preventDefault(); // 阻止默认提交事件
             $('#res').text('请稍等...');
 
-            const formData = new FormData(this); // 使用 FormData 对象获取表单数据
+            try {
+                const response = await $.ajax({
+                    url: 'http://127.0.0.1:8000/type/',
+                    type: 'POST',
+                    data: new FormData(event.target), // 通过event获取表单元素
+                    processData: false,
+                    contentType: false
+                });
+                // 处理成功响应
+                console.log('请求成功:', response);
+                return response; // 返回结果供外部await使用
+            } catch (error) {
+                // 统一错误处理
+                console.error('请求失败:', error);
+                throw error; // 抛出错误供外层catch
+            }
 
+        }
+        $('#upload-form').on('submit', async function (event) {
+            event.preventDefault(); // 阻止默认提交事件
+            try {
+  // 改变上传图像后，禁用导出按钮直到返回完整结果
+       const exportBtn = $('#export-btn');
+exportBtn.prop('disabled', true); // 禁用
+exportBtn.css({
+    'background-color': 'grey',
+    'cursor': 'not-allowed'
+});
+                   // 显示等待提示
+                $('#res').text('请稍等...');
+
+                let tumor_data = await sub(event);
+                let tumor_type = tumor_data['tumor_type']
+                let confidence = tumor_data['confidence']
+
+                let percentage = (confidence * 100).toFixed(2) + '%';//浮点数转百分比，保留两位小数
+
+
+                $('#res').html(`<p>肿瘤类型：${tumor_type}</p><p>可信度：${percentage}</p>`)
+
+                if (tumor_type === '无肿瘤') return; <!-- 无需执行下面代码 -->
+                $('#ai-wait').show();//显示等待ai回复提示
+                 ai(tumor_type); // 调用AI分析接口
+
+                // 定义三个不同的模型名称
+                const models = ['unet', 'deeplab', 'linknet'];
+
+                // 遍历模型名称，发送三个请求
+                models.forEach(modelName => {
+                    let formData = new FormData(this);
+                    formData.append('model_name', modelName);  // 添加模型参数
+                    console.log(modelName);
+                    $.ajax({
+                        url: 'http://127.0.0.1:8000/location/',
+                        type: 'POST',
+                        data: formData,
+                        processData: false,              // 禁止处理数据（文件上传必须）
+                        contentType: false,               // 禁止设置Content-Type（由浏览器自动处理）
+                        success: function (response) {
+                            let container = '#' + modelName + '-image';//模型对应的img标签的id
+                            $(container).attr('src', response.image);
+                            $(container).show();
+                        },
+                        error: function (xhr, status, error) {
+                            console.error(`模型 ${modelName} 请求失败:`, error);
+                        }
+                    });
+                });
+            } catch (error) {
+                $('#res').text('提交失败: ' + error.message);
+            }
+        });
+
+        async function ai(tumor_type) {
+            const formData = new FormData();
+            formData.append('tumor_type', tumor_type); // 将数据添加到FormData中
+            let model_type = $('#model-type').val();
+            console.log(model_type);
+            formData.append('model_type', model_type);//选择大语言模型
             $.ajax({
-                url: 'http://127.0.0.1:8000/predict/', // Django 后端的 URL
+                url: 'http://127.0.0.1:8000/ai/', // Django 后端的 URL
                 type: 'POST',
                 data: formData,
                 processData: false, // 不处理数据
                 contentType: false, // 不设置内容类型
-                success: function(response) {
-                    // 设置 img 的 src 为返回的 Base64 数据
-                    $('#res-image').attr('src', response.image);
-                    $('#res-image').show(); // 显示图像
-                    $('#res').text('推测完毕'); // 更改文本为“推测完毕”
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    console.error('Error uploading image:', textStatus, errorThrown);
-                    $('#res').text('上传失败，请重试。'); // 显示错误信息
+                  success: function (response) {
+        $('#ai-wait').hide(); // 隐藏等待提示
+        const md = window.markdownit(); // 初始化解析器
+        let markdownText = response.ai_answer;
+        let htmlResult = md.render(markdownText); // 解析markdown
+        $('#ai-answer').html(`${htmlResult}`); // 渲染内容
+
+        // 成功后，启用导出按钮
+      const exportBtn = $('#export-btn');
+exportBtn.prop('disabled', false); // 禁用
+exportBtn.css({
+    'background-color': '#007bff',
+    'cursor': 'pointer'
+});
+    },
+
+                error: function (jqXHR, textStatus, errorThrown) {
+                    console.error('Error ', textStatus, errorThrown);
+
                 }
             });
-        });
+        }
+    </script>
 
+<script>
+
+  // 查看历史按钮点击
+  $('#history-btn').click(function () {
+    $.ajax({
+      type: 'GET',
+      url: '/history/',
+      success: function (res) {
+        let html = '<table ><tr><th>肿瘤名称</th><th>置信度</th><th>时间</th></tr>';
+        res.records.forEach(function (rec) {
+          html += `<tr><td>${rec.tumor_name}</td><td>${rec.confidence}</td><td>${rec.created_at}</td></tr>`;
+        });
+        html += '</table>';
+        $('#history-content').html(html);
+        $('#history-popup').fadeIn();
+      },
+      error: function () {
+        alert('获取历史记录失败');
+      }
+    });
+  });
+</script>
+<script>
+  fetch('/get_username/')
+    .then(response => {
+      if (!response.ok) {
+        throw new Error("未登录");
+      }
+      return response.json();
+    })
+    .then(data => {
+        window.currentUsername = data.username;
+      document.getElementById('navbar-username').innerText = `你好！用户：${data.username}`;
+    })
+    .catch(error => {
+      window.location.href = '/login/'; // 如果没有登录，重定向到登录页
+    });
 </script>
 
+<script>
+  const inputImage = document.getElementById('image');
+  const previewImg = document.getElementById('preview-img');
+
+  // 当用户选择文件时，生成临时 URL 并显示
+  inputImage.addEventListener('change', function() {
+    clearPreAnalysis();//清除之前的分析结果
+    const file = this.files[0];
+    if (!file) {
+      previewImg.style.display = 'none';
+      return;
+    }
+    // 只处理图片文件
+    if (!file.type.startsWith('image/')) {
+      alert('请选择图片文件');
+      this.value = '';
+      previewImg.style.display = 'none';
+      return;
+    }
+    // 生成 URL 并赋值给 img
+
+    const url = URL.createObjectURL(file);
+    previewImg.src = url;
+    previewImg.style.display = 'block';
+    $('#upload-form').triggerHandler('submit');
+
+  });
+
+
+
+  //清除之前的分析结果
+  function clearPreAnalysis(){
+         $('#res').text('');
+        $('#unet-image').hide();
+                  $('#linknet-image').hide();
+                    $('#deeplab-image').hide();
+                 $('#ai-answer').text('');
+  }
+</script>
+
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+
+<script>
+$('#export-btn').on('click', function() {
+  const username = window.currentUsername || 'unknown';
+  const now = new Date();
+  const timestamp = now.toISOString().slice(0,19).replace('T','_');
+  const filename = `${username}_${timestamp}.pdf`;
+
+  const tumorType = document.querySelector('#res').innerText;
+  const unetImg    = document.getElementById('unet-image').src;
+  const dlImg      = document.getElementById('deeplab-image').src;
+  const linknetImg = document.getElementById('linknet-image').src;
+  const aiAnswer   = document.getElementById('ai-answer').innerHTML;
+
+  // 创建一个临时的div作为要导出的内容
+  const reportContainer = document.createElement('div');
+  reportContainer.innerHTML = `
+    <h1>分析报告</h1>
+    <p><strong>用户名：</strong>${username}</p>
+    <p><strong>时间：</strong>${now.toLocaleString()}</p>
+    <h2>肿瘤类型与置信度</h2>
+    <div>${tumorType}</div>
+    <h2>肿瘤标记图（绿色区域代表可能的肿瘤位置）</h2>
+    ${ unetImg    ? `<p>U-Net:</p><img src="${unetImg}" style="max-width:300px;"><br>` : '' }
+    ${ dlImg      ? `<p>DeepLabV3+:</p><img src="${dlImg}" style="max-width:300px;"><br>` : '' }
+    ${ linknetImg ? `<p>LinkNet:</p><img src="${linknetImg}" style="max-width:300px;"><br>` : '' }
+    <h2>AI 助手回复</h2>
+    <div>${aiAnswer}</div>
+  `;
+
+  // 用 html2pdf 生成 PDF
+  html2pdf()
+    .from(reportContainer)
+    .set({
+      margin: 10,
+      filename: filename,
+      html2canvas: { scale: 2 }, // 提高清晰度
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    })
+    .save();
+});
+</script>
+
+
 </body>
+
 </html>

@@ -1,147 +1,364 @@
-    body {
-            display: flex;
-            justify-content: center;
-            background-image: url("./background.png");
-            align-items: center;
-            height: 100vh;
-            margin: 0;
+body {
+    display: flex;
+    position: relative;
+    flex-direction: column;
+    padding-top: 10px; /* 避免内容被导航栏遮挡 */
+    margin: 0;
 
-        }
+    background-image: url("./background.png");
+}
 
-        .navbar {
-            background-color: rgba(168, 101, 248, 0.8); /* 使用 rgba 设置背景色及透明度 */
-            padding: 15px;
-            color: white;
-            text-align: center;
-            width: 100%; /* 宽度充满屏幕 */
-            position: fixed; /* 固定导航栏 */
-            top: 0; /* 在页面最上方 */
-            z-index: 1000; /* 确保导航栏在上层 */
-            backdrop-filter: blur(10px); /* 毛玻璃效果 */
-        }
+.navbar {
+    background-color: rgba(11, 143, 191, 0.8); /* 使用 rgba 设置背景色及透明度 */
+    padding: 15px;
+    color: white;
+    text-align: center;
+    width: 100%; /* 宽度充满屏幕 */
+    position: fixed; /* 固定导航栏 */
+    top: 0; /* 在页面最上方 */
+    z-index: 1000; /* 确保导航栏在上层 */
+    backdrop-filter: blur(10px); /* 毛玻璃效果 */
+}
 
-        select {
-            padding: 10px; /* 增加选择框内边距 */
-            border: 1px solid #ccc; /* 边框样式 */
-            border-radius: 5px; /* 圆角 */
-            width: 100%; /* 让选择框占满整个宽度 */
-            font-size: 16px; /* 增大字体 */
-        }
-      .container {
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+.container {
+    display: flex;
+    flex-direction: row;
+    padding-top: 30px;
+    width: 100%;
+    max-width: 2000px;
 
-            width: 100%;
-            height: 90%;
-            max-width: 1000px; /* 增加最大宽度 */
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            margin-top: 40px;
-            border: 5px solid gold; /* 金色边框 */
-        }
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
 
-        .form-container {
-            background-color: white; /* 白色背景 */
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-            width: 90%;
-        }
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+    border: 2px solid #d3fbae;
+}
 
-        h2 {
-            text-align: center;
-            color: #333; /* 改变标题颜色以符合新设计 */
-        }
+.form-container {
+    position: relative;
+    height: 330px;
+    left: 0;
+    width: 300px;
+    background-color: white;
 
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
+    padding: 20px;
 
-        input[type="file"] {
-            display: none; /* 隐藏原始输入框 */
-        }
 
-        .file-upload-label {
-            display: inline-block;
-            padding: 10px;
-            border-radius: 5px;
-            background-color: #167dfa;
-            color: #fff;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .file-upload-label:hover {
-            background-color: #62a1f3;
-        }
-
-        button {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            font-size: 16px; /* 增大字体 */
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s; /* 添加阴影过渡 */
-            width: 100%;
-            position: relative; /* 为伪元素定位 */
-            overflow: hidden; /* 溢出隐藏 */
-        }
-
-        button::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 300%;
-            height: 300%;
-            background: rgba(255, 255, 255, 0.2); /* 科技感光效 */
-            border-radius: 50%;
-            transform: translate(-50%, -50%) scale(0); /* 初始缩放为0 */
-            transition: transform 0.5s;
-            z-index: 0; /* 确保在按钮底下 */
-        }
-
-        button:hover::before {
-            transform: translate(-50%, -50%) scale(1); /* 鼠标悬停时放大 */
-        }
-
-        button:hover {
-            background-color: #0056b3;
-            transform: scale(1.05); /* 悬浮时放大 */
-            box-shadow: 0 0 20px rgba(0, 123, 255, 0.5); /* 鼠标悬停时增加阴影 */
-        }
-
-           .image-container {
-            border: 2px solid #f4e964; /* 为图片容器添加边框 */
-            border-radius: 10px; /* 圆角 */
-            padding: 10px; /* 内边距 */
-            width: 90%; /* 确保容器宽度占满 */
-           height: 400px;
-            color: #fa6718;
-            background-color: #333333;
-            display: flex;
-            justify-content: center; /* 水平居中 */
-             flex-direction: column; /* 垂直排列内容 */
-            align-items: center; /* 水平居中 */
-        }
+}
 
 .image-container img {
-    max-width: 40%; /* 图像最大宽度不超过父容器 */
-    height: auto; /* 自适应高度 */
-    border-radius: 5px; /* 圆角 */
+
+
+    height: 240px;
     display: block; /* 确保图像为块级元素，避免下方空白 */
 }
+
+#tumor-type {
+    display: flex;
+    flex-direction: column;
+    width: 280px;
+    margin-right: 10px;
+
+}
+
+.image-container div {
+    width: 300px;
+    padding: 5px;
+    margin-right: 25px;
+}
+
 .image-container p {
 
+    margin-bottom: 10px; /* 段落与图像之间的间距 */
+    text-align: center; /* 段落文本居中 */
+    margin-right: 25px;
+}
+
+.image-container h2 {
+    color: black;
+    display: block;
+    width: 300px;
     margin-top: 10px; /* 段落与图像之间的间距 */
     text-align: center; /* 段落文本居中 */
+}
+
+.text-container {
+    background-color: white; /* 白色背景 */
+    width: 1500px;
+    align-self: center;
+    align-content: center;
+    padding: 20px;
+    margin-top: 5px;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    height: auto; /* 自适应高度 */
+
+
+}
+
+#tumor-type {
+    display: flex;
+    flex-direction: column;
+
+}
+
+.image-container {
+    border-left: solid 1px #bdbdbd;
+    padding: 10px; /* 内边距 */
+    width: 85%;
+    height: 350px;
+    background-color: #ffffff;
+    display: flex;
+    flex-direction: row; /* 横向排列内容 */
+}
+
+
+h2 {
+    text-align: center;
+    color: #333; /* 改变标题颜色以符合新设计 */
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+   align-items: center;
+    gap: 10px;
+}
+
+input[type="file"] {
+    display: none; /* 隐藏原始输入框 */
+
+}
+
+.file-upload-label {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    border-radius: 20px;
+    top: 20px;
+    height: 120px;
+    width: 180px;
+
+    background: linear-gradient(135deg, #0f62fe, #45c196); /* 蓝紫渐变背景 */
+    color: #fff;
+    font-size: 18px;
+    font-weight: bold;
+    letter-spacing: 1px;
+
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s ease;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.file-upload-label::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 300%;
+    height: 300%;
+    background: rgba(255, 255, 255, 0.1);
+    transform: translate(-50%, -50%) scale(0);
+    transition: transform 0.5s ease;
+    border-radius: 50%;
+    z-index: 0;
+}
+
+.file-upload-label:hover::before {
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.file-upload-label:hover {
+    box-shadow: 0 12px 30px rgba(94, 23, 235, 0.6); /* hover时更亮的光影 */
+    transform: scale(1.05);
+}
+button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    font-size: 16px; /* 增大字体 */
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 45px;
+    transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s; /* 添加阴影过渡 */
+    width: 100%;
+    position: relative; /* 为伪元素定位 */
+    overflow: hidden; /* 溢出隐藏 */
+}
+
+button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 300%;
+    height: 300%;
+    background: rgba(255, 255, 255, 0.2); /* 科技感光效 */
+    border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0); /* 初始缩放为0 */
+    transition: transform 0.5s;
+    z-index: 0; /* 确保在按钮底下 */
+}
+
+button:hover::before {
+    transform: translate(-50%, -50%) scale(1); /* 鼠标悬停时放大 */
+}
+
+button:hover {
+    background-color: #0056b3;
+    transform: scale(1.05); /* 悬浮时放大 */
+    box-shadow: 0 0 20px rgba(0, 123, 255, 0.5); /* 鼠标悬停时增加阴影 */
+}
+
+#export-btn {
+ margin-left: 300px; width: 200px;background-color: grey; cursor: not-allowed;z-index: 0;
+}
+.custom-select select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-color: #ffffff;
+    border: 1px solid #ccc;
+    padding: 10px 40px 10px 15px;
+    font-size: 16px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="5"><path fill="none" stroke="%23999" stroke-width="1.5" d="M1 1l4 4 4-4"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 10px 5px;
+}
+
+.custom-select select:hover {
+    border-color: #888;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+}
+
+.custom-select select:focus {
+    border-color: #555;
+    box-shadow: 0 0 0 3px rgba(100, 150, 250, 0.5);
+    outline: none;
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+}
+
+.modal-content {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    min-width: 400px;
+    max-width: 80%;
+}
+
+.close-btn {
+    float: right;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+}
+
+.loading-text {
+    font-size: 20px;
+    font-family: sans-serif;
+    color: #2eabcf;
+}
+
+.dots::after {
+    content: '';
+    display: inline-block;
+    width: 1em;
+    text-align: left;
+    animation: dots 1.5s steps(4, end) infinite;
+}
+
+@keyframes dots {
+    0% {
+        content: '';
+    }
+    25% {
+        content: '.';
+    }
+    50% {
+        content: '..';
+    }
+    75% {
+        content: '...';
+    }
+    100% {
+        content: '';
+    }
+}
+
+#history-content table {
+    width: 100%;
+    border-collapse: collapse;
+    color: black;
+}
+
+#history-content th, #history-content td {
+    border: 1px solid black;
+    padding: 8px;
+    text-align: center;
+}
+
+#history-content th {
+    background-color: #ddd;
+}
+
+#history-content tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+#history-content,
+#history-content table,
+#history-content th,
+#history-content td,
+#history-content tr,
+#history-content * {
+    color: black !important; /* 强制黑色字体 */
+}
+
+#history-popup {
+    position: fixed; /* 固定在页面上，脱离正常文档流 */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999; /* 设置一个很高的层级 */
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    display: none; /* 初始隐藏 */
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
+
+/* 注册弹窗 */
+#register-popup {
+  position: fixed;             /* 固定定位，覆盖在最顶层 */
+  top: 30%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 400px;
+  background: #ffffff;         /* 白色背景 */
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  z-index: 9999;               /* 保证高于遮罩层和其他内容 */
 }
 

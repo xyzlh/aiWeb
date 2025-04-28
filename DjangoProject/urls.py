@@ -20,6 +20,17 @@ from django.urls import path
 from DjangoProject import views
 
 urlpatterns = [
-    path('',views.index, name = 'index'),
-    path('modelName/', views.get_model_names, name = 'get_model_names'),
-    path('predict/', views.predict_image, name = 'predict_image')]
+    path('monthly_stats_api/', views.monthly_stats_api,name='monthly_stats_api'),
+    path('stats_api/', views.stats_api, name='stats_api'),
+
+    path('statistics/', views.statistics, name='statistics'),
+    path('get_username/', views.get_username_view, name='get_username'),
+    path('history/', views.get_history_view, name='history'),
+    path('auth/', views.auth_view, name='auth'),
+    path('', views.login, name='login'),
+    path('index/',views.index, name = 'index'),
+    path('type/', views.infer_type, name = 'infer_type'),
+path('location/', views.infer_location, name = 'infer_location'),
+path('ai/', views.infer_ai, name = 'infer_ai'),
+
+]

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>登录/注册</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .register-input {
+  width: 90%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 16px;
+  background-color: white;  /* 背景白色 */
+  color: black;              /* 字体颜色黑色 */
+}
+    .glass-box {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+      backdrop-filter: blur(10px);
+      padding: 40px;
+      color: white;
+      width: 300px;
+      animation: fadeIn 1s ease;
+    }
+    @keyframes fadeIn {
+      from { transform: translateY(-30px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .input-login{
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.2);
+      color: white;
+    }
+    button {
+      width: 48%;
+      padding: 10px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 8px;
+      background: #1f80e0;
+      color: white;
+      font-weight: bold;
+      transition: 0.3s;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #52aaff;
+    }
+    .btn-group {
+      display: flex;
+      justify-content: space-between;
+    }
+    .error { color: red; font-size: 14px; }
+  </style>
+</head><!-- 登录 / 注册表单 -->
+<body>
+<div class="glass-box">
+  <h2>用户登录 / 注册</h2>
+  <form id="auth-form" onsubmit="handleFormSubmit(event)">
+    <input type="text" class="input-login" id="username" name="username" placeholder="用户名" required>
+    <input type="password"  class="input-login" id="password" name="password" placeholder="密码" required>
+
+    <div id="messages"></div>
+
+    <div class="btn-group">
+      <button name="action" value="login" type="submit">登录</button>
+      <button type="button" onclick="showRegisterPopup()">注册</button>
+    </div>
+  </form>
+</div>
+
+<!-- 注册弹窗 -->
+<div id="register-popup" style="display:none; width:600px; position:fixed; top:30%; left:50%; transform:translateX(-50%);
+  background:#fafafa; padding:20px;border-radius:10px; box-shadow:0 0 10px rgba(103,103,103,0.5); text-align:center;">
+  <h3>注册用户</h3>
+  <input type="text" id="register-username"  class="register-input"  placeholder="用户名"><br><br>
+  <input type="password" class="register-input"  id="register-password1" placeholder="输入密码"><br><br>
+  <input type="password"  class="register-input"  id="register-password2" placeholder="确认密码"><br><br>
+     <label>年龄:</label>  <input type="number"  id="age" placeholder="输入数字"><br><br>
+ <label><input type="radio" name="gender" checked value="M"> 男</label>
+  <label><input type="radio" name="gender" value="F"> 女</label><br>
+
+  <button style="background-color:#f61818; transition: background-color 0.3s;"
+          onmouseover="this.style.backgroundColor='#f85a5a'" onmouseout="this.style.backgroundColor='#f61818'"
+          onclick="$('#register-popup').hide()">取消</button>
+      <button onclick="submitRegister()">确认注册</button>
+  <div id="register-error" style="color:red; margin-top:10px;"></div>
+</div>
+
+{% load static %}
+<script src="{% static 'jquery.js' %}"></script>
+<script>
+  function showRegisterPopup() {
+    $('#register-username').val($('#username').val());
+    $('#register-password1').val('');
+    $('#register-password2').val('');
+    $('#register-error').text('');
+    $('#register-popup').show();
+  }
+function submitRegister() {
+  var username = $('#register-username').val().trim();
+  var pwd1 = $('#register-password1').val();
+  var pwd2 = $('#register-password2').val();
+    var age = $('#age').val();
+    var gender = $('input[name="gender"]:checked').val();
+  if (!username) {
+    $('#register-error').text('请输入用户名');
+    return;
+  }
+  if (pwd1.length < 6) {
+    $('#register-error').text('密码长度不能少于6位');
+    return;
+  }
+  if (pwd1 !== pwd2) {
+    $('#register-error').text('两次密码不一致');
+    return;
+  }
+  if (age < 0 || age > 150) {
+    $('#register-error').text('年龄为0-150之间的整数');
+    return;
+  }
+
+  $.ajax({
+    type: 'POST',
+    url: '/auth/',
+    data: {
+      username: username,
+      password: pwd1,
+        age: age,
+        gender: gender,
+      action: 'register',
+    },
+    success: function(response) {
+      if (response.status === 'success') {
+        $('#messages').html('<p style="color:green;">注册成功，请登录</p>');
+        $('#username').val(username); // 自动填充用户名
+        $('#register-popup').hide();
+      } else {
+        $('#register-error').text(response.message);
+      }
+    },
+    error: function() {
+      $('#register-error').text('请求失败，请稍后再试。');
+    }
+  });
+}
+
+  function handleFormSubmit(event) {
+    event.preventDefault();
+    var username = $('#username').val().trim();
+    var password = $('#password').val();
+
+    if (!username || !password) {
+      $('#messages').html('<p class="error">请输入用户名和密码</p>');
+      return;
+    }
+
+    $.ajax({
+      type: 'POST',
+      url: '/auth/',
+      data: {
+        username: username,
+        password: password,
+        action: 'login',
+      },
+      success: function(response) {
+        if (response.status === 'success') {
+            window.location.href = response.redirect;
+
+        } else {
+          $('#messages').html('<p class="error">' + response.message + '</p>');
+        }
+      },
+      error: function() {
+        $('#messages').html('<p class="error">请求失败，请稍后再试。</p>');
+      }
+    });
+  }
+</script>
+
+</html>
